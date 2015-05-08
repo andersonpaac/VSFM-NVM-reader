@@ -1,0 +1,8 @@
+__author__ = 'andersonpaac'
+import argparse
+
+def args():
+    parser=argparse.ArgumentParser(description="TRIX")
+    parser.add_argument("-f","--logto",default="")
+    parser.add_argument("-o","--source",default="")
+    return parser
