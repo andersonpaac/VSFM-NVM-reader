@@ -11,7 +11,9 @@ def getfile():
     parse(data)
 
 def parse(data):
-    data = data[183:9114]
+    numcams = int(data[2])
+    numpoints = int(data[numcams+4])
+    data = data[numcams+5:numpoints+numcams+5]
     featured =[]
     locations = []
     for each in data:
