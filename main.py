@@ -1,8 +1,12 @@
 import argparser.parser as arg
+import axis.functions as kris
+import math
 
+outf=""
 fname =""
 threshold_freq = 10
-
+width = 4000
+height = 3000
 def getfile():
     global fname
     fd = open(fname)
@@ -16,22 +20,107 @@ def parse(data):
     data = data[numcams+5:numpoints+numcams+5]
     featured =[]
     locations = []
+    #a=0
     for each in data:
         analyze = each.rstrip().split(" ")
-        if analyze[6]>threshold_freq:
-            featured.append(each)
-            locations.append({})
-            locations[-1]["Index"]=analyze[7]
-            locations[-1]["X"]=analyze[9]
-            locations[-1]["Y"]=analyze[10]
+        if int(analyze[6])>threshold_freq:
+            #if a==0:
+            #    print analyze
+            featured.append({"X":}
+            locations.append({"Index":[],"X":[],"Y":[]})
+            i=7
+            for every in xrange(int(analyze[6])):
+                locations[-1]["Index"].append(analyze[i])
+                locations[-1]["X"].append(float(analyze[i+2])+width/2)
+                locations[-1]["Y"].append(float(analyze[i+3])+height/2)
+                #if a==0:
+                    #print "Y is ", analyze[i+3]
+                    #a=1
+                i=i+4
     print len(featured)
-    print locations[0]
+    #print featured[0]
+    #print locations[83]
+    #writeto(locations)
+    #print locations[26]
+    #print featured[7]
+    #print featured[26]
+    #calibrate(featured)
+    #print featured[0]
+    #feature(locations[1])
+    #print locations[1]
+    print featured[1]
+def feature(loc):
+    path = "../assets/"
+    for i in xrange(3):
+        picmid = str(loc["Index"][i]).zfill(8)+".jpg"
+        kris.mark_on_picture(path+picmid,loc["X"][i],loc["Y"][i])
+    
+
+def calibrate(featured):
+    X={}        #indices which have the floor (key is floor)
+    Y={}
+    Z={}
+    i=0
+    for each in featured:
+        divs = each.split(" ")
+        key_x = int(math.floor(float(divs[0])))
+        key_y = int(math.floor(float(divs[1])))
+        key_z = int(math.floor(float(divs[2])))
+        if key_x in X:
+            X[key_x].append(i)
+        else:
+            X[key_x]=[i]
+        i = i+1
+    N_X_Y = {}
+    N_X_Z = {}
+    #print X.keys()
+    for each in X.keys():   #returns 0 , 1 , 2 ,3
+        points = X[each]
+        for i in xrange(len(points)):       #i=0,1,2,3
+            divs = featured[points[i]].split(" ")
+            key_y = int(math.floor(float(divs[1])))
+            key_z = int(math.floor(float(divs[2])))
+            #torem = points.remove(points[i])
+            #print points
+            for every in points:
+                if every>=0:
+                    divn = featured[every].split(" ")
+                    key_cy = int(math.floor(float(divn[1])))
+                    key_cz = int(math.floor(float(divs[2])))
+                    if abs(key_cy-key_y)<1.5 and key_cy!=key_y: #and abs(key_cz-key_z)>2:
+                        if each in N_X_Y:
+                            N_X_Y[each].append(every)
+                        else:
+                            N_X_Y[each]=[every]
+                    if abs(key_cz-key_z)<1.5 and key_cz!=key_z:
+                        if each in N_X_Z:
+                            N_X_Z[each].append(every)
+                        else:
+                            N_X_Z[each]=[every]
+
+
+            #points.append(torem)
+
+    
+    jj=1
+    print N_X_Y[jj]
+    print "\n"
+    print featured[N_X_Y[jj][0]]
+    print "\n"
+    print featured[N_X_Y[jj][1]]
+         
+def writeto(locations):
+    global outf
+    a = open(outf,"wb")
+    a.write(str(locations))
+    a.close()
 
 
 def main():
-    global fname
+    global fname,outf
     parser = arg.args()
     fname = parser.parse_args().filename
+    outf = parser.parse_args().out
     if fname == "":
         print "Please provide input filename with the -f"
         exit(-1)
