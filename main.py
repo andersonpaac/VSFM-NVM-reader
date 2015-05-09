@@ -1,10 +1,11 @@
 import argparser.parser as arg
 import axis.functions as kris
+import structures.Point as classes
 import math
 
 outf=""
 fname =""
-threshold_freq = 10
+threshold_freq = 0
 width = 4000
 height = 3000
 def getfile():
@@ -22,11 +23,15 @@ def parse(data):
     locations = []
     #a=0
     for each in data:
+        featured.append(classes.Point(each))
+        '''
         analyze = each.rstrip().split(" ")
         if int(analyze[6])>threshold_freq:
             #if a==0:
             #    print analyze
-            featured.append({"X":}
+            x , y ,z  = float(analyze[0]) , float(analyze[1]) , float(analyze[2])
+            x , y , z = kris.axis_rotate((x,y,z),"z",-25)
+            featured.append({"X":x, "Y":y ,"Z":z})
             locations.append({"Index":[],"X":[],"Y":[]})
             i=7
             for every in xrange(int(analyze[6])):
@@ -37,18 +42,12 @@ def parse(data):
                     #print "Y is ", analyze[i+3]
                     #a=1
                 i=i+4
+        '''
     print len(featured)
-    #print featured[0]
-    #print locations[83]
-    #writeto(locations)
-    #print locations[26]
-    #print featured[7]
-    #print featured[26]
-    #calibrate(featured)
-    #print featured[0]
-    #feature(locations[1])
-    #print locations[1]
     print featured[1]
+
+
+
 def feature(loc):
     path = "../assets/"
     for i in xrange(3):
