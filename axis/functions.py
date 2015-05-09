@@ -34,16 +34,18 @@ def axis_rotate((x,y,z),axis,theta,radians=0):
     else:
         print "Please specify axis"
         return -1
-    return (x_hat,y_hat,z_hat)
+    return x_hat,y_hat,z_hat
 
 #input filename, x, y
 #output out.png with cross on it
-def mark_on_picture(filename, x,y):
+def mark_on_picture(filename, x,y,target=""):
     r = 5.    
     im = Image.open(filename)
     draw = ImageDraw.Draw(im)
     draw.ellipse((x-r, y-r, x+r, y+r), fill=(255,102,0))
     del draw
-    im.save("out.png")
-
+    if target!="":
+        im.save(target)
+    else:
+        im.save(filename[:-4]+"_out.png")
 
