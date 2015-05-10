@@ -1,3 +1,0 @@
-Error percentage is 41.6481069042
-Wrong false is 43.8502673797
-Wrong True is 56.1497326203
