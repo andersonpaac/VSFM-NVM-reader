@@ -19,34 +19,19 @@ def parse(data):
     numcams = int(data[2])
     numpoints = int(data[numcams+4])
     data = data[numcams+5:numpoints+numcams+5]
-    featured =[]
+    featured = classes.Space()
     locations = []
     #a=0
     for each in data:
-        featured.append(classes.Point(each))
-        '''
-        analyze = each.rstrip().split(" ")
-        if int(analyze[6])>threshold_freq:
-            #if a==0:
-            #    print analyze
-            x , y ,z  = float(analyze[0]) , float(analyze[1]) , float(analyze[2])
-            x , y , z = kris.axis_rotate((x,y,z),"z",-25)
-            featured.append({"X":x, "Y":y ,"Z":z})
-            locations.append({"Index":[],"X":[],"Y":[]})
-            i=7
-            for every in xrange(int(analyze[6])):
-                locations[-1]["Index"].append(analyze[i])
-                locations[-1]["X"].append(float(analyze[i+2])+width/2)
-                locations[-1]["Y"].append(float(analyze[i+3])+height/2)
-                #if a==0:
-                    #print "Y is ", analyze[i+3]
-                    #a=1
-                i=i+4
-        '''
-    print len(featured)
-    print featured[1]
+        featured.addtospace(each)
 
-
+    z_cpy = featured.z
+    z_cpy.sort()
+    #print z_cpy[len(z_cpy)/2]
+    #print z_cpy
+    print featured.boxes[-17][-7]
+    featured.validateboxes()
+    print featured.boxes.keys()
 
 def feature(loc):
     path = "../assets/"

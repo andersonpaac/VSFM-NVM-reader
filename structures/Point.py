@@ -1,4 +1,6 @@
 import axis.functions as kris
+import math
+
 WIDTH = 4000
 HEIGHT = 3000
 class Point:
@@ -32,3 +34,56 @@ class SIFTFeature:
 		self.x = float(data[2]) + WIDTH/2
 		self.y = float(data[3]) + HEIGHT/2
 
+class Space:
+    BOXSIZE = 1         #How big is each box
+    VALID_SIZE = 2      #Number of points needed for each box to be valid
+    boxes = {}
+    validkeys = []
+    invalidkeys = []
+    def __init__(self):
+        self.z = []
+        self.space = []     #Array of point
+
+    def addtospace(self,data):
+        self.space.append(Point(data))
+        self.z.append(self.space[-1])
+        self.addtobox()
+
+    # (-1 , 1) belong to "0"
+    def addtobox(self):
+        x = int(self.space[-1].x)
+        y = int(self.space[-1].y)
+        x_box = x / self.BOXSIZE
+        y_box = y / self.BOXSIZE
+        if x_box not in self.boxes:
+            self.boxes[x_box] = {}
+            self.boxes[x_box][y_box] = [[self.space[-1].x,self.space[-1].y,self.space[-1].z]]
+
+        if x_box in self.boxes:
+            if y_box not in self.boxes[x_box]:
+                self.boxes[x_box][y_box] = [[self.space[-1].x,self.space[-1].y,self.space[-1].z]]
+            else:
+                self.boxes[x_box][y_box].append([[self.space[-1].x,self.space[-1].y,self.space[-1].z]])
+
+    def validateboxes(self):
+        for each in self.boxes.keys():
+            for every in self.boxes[each].keys():
+                if len(self.boxes[each][every]) > self.VALID_SIZE:
+                    self.validkeys.append([each,every])
+                else:
+                    self.invalidkeys.append([each,every])
+
+
+
+
+    def printboxes(self):
+        print self.boxes
+
+
+
+
+
+
+#Constant altitude
+#Variant boxes
+#HDOP - Altitude , satkey
