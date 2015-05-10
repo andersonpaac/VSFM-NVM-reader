@@ -1,5 +1,6 @@
 import axis.functions as kris
 import math
+import numpy as np
 
 WIDTH = 4000
 HEIGHT = 3000
@@ -27,7 +28,6 @@ class Point:
             return str({"X":self.x,"Y":self.y,"Z":self.z,"Images":self.features})
 
 class SIFTFeature:
-
     def __init__(self,data):
 		self.index = int(data[0])
 		self.feature = int(data[1])
@@ -46,8 +46,9 @@ class Space:
 
     def addtospace(self,data):
         self.space.append(Point(data))
-        self.z.append(self.space[-1])
+        self.z.append(self.space[-1].z)
         self.addtobox()
+        self.printed=0
 
     # (-1 , 1) belong to "0"
     def addtobox(self):
@@ -57,13 +58,13 @@ class Space:
         y_box = y / self.BOXSIZE
         if x_box not in self.boxes:
             self.boxes[x_box] = {}
-            self.boxes[x_box][y_box] = [[self.space[-1].x,self.space[-1].y,self.space[-1].z]]
+            self.boxes[x_box][y_box] = [[self.space[-1].x,self.space[-1].y,self.space[-1].z,self.space[-1]]]
 
         if x_box in self.boxes:
             if y_box not in self.boxes[x_box]:
-                self.boxes[x_box][y_box] = [[self.space[-1].x,self.space[-1].y,self.space[-1].z]]
+                self.boxes[x_box][y_box] = [[self.space[-1].x,self.space[-1].y,self.space[-1].z,self.space[-1]]]
             else:
-                self.boxes[x_box][y_box].append([[self.space[-1].x,self.space[-1].y,self.space[-1].z]])
+                self.boxes[x_box][y_box].append([self.space[-1].x,self.space[-1].y,self.space[-1].z,self.space[-1]])
 
     def validateboxes(self):
         for each in self.boxes.keys():
@@ -73,7 +74,11 @@ class Space:
                 else:
                     self.invalidkeys.append([each,every])
 
-
+    def getfloor(self):
+        if self.printed==0:
+            print  "median is",np.median(np.array(self.z))
+            self.printed=1
+        return np.median(np.array(self.z))
 
 
     def printboxes(self):

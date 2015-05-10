@@ -38,16 +38,17 @@ def axis_rotate((x,y,z),axis,theta,radians=0):
 
 #input filename, x, y
 #output out.png with cross on it
-def mark_on_picture(filename, x,y,target=""):
-    r = 5.    
+def mark_on_picture(filename, x,y,truth="",target=""):
+    r = 17.
     x = int(math.floor(x))
     y = int(math.floor(y))
     im = Image.open(filename)
     draw = ImageDraw.Draw(im)
     draw.ellipse((x-r, y-r, x+r, y+r), fill=(255,102,0))
     del draw
-    if target!="":
-        im.save(target)
-    else:
-        im.save(filename[:-4]+"_out.png")
+
+
+    print "/Users/asc-mbp/Documents/WORKSPACE/gitrepos/"+truth
+    im.save("/Users/asc-mbp/Documents/WORKSPACE/gitrepos/"+truth+"/"+filename[-9:-5]+"_"+target+"_out.JPEG","JPEG")
+
 
