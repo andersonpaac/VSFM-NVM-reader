@@ -13,7 +13,10 @@ fname =""
 threshold_freq = 0
 width = 4000
 height = 3000
-aggression = "conservative"
+aggression = 8  #0=conservative(less spots) , 1=less conservative , 2= less agression , 3....8=Very aggressive (more spots)
+contextualthresh = 2
+rights = []
+wrongs = []
 def getfile():
     global fname
     fd = open(fname)
@@ -59,23 +62,38 @@ def findoptimal(space):
 def metrics(bools,space):
     correct=0.0
     errors = 0.0
-    global golden
+    trueland=0.0
+    global golden , contextualthresh , rights
     landspot = 0
     for each in bools:
         for every in bools[each]:
             if bools[each][every] == [True]:
-                landspot = landspot+1
+                landspot = landspot+1.0
+            if bools[each][every] == [True] and golden[each][every]==[True]:
+                #drawfrombox(each,every,space,"true",str(each)+"_"+str(every))
+                trueland = trueland+1.0
             if bools[each][every]!=golden[each][every] and bools[each][every]==[True]:
                 errors=errors+1.0
 
+
             else:
                 correct = correct+1.0
+    '''
     print "Error percentage is "+str(float(errors/(errors+correct))*100)
     print "Found " +str(landspot)+" Landing Spots"
     #print "Wrong false is "+str(wrongfalse*100/errors)
     #print "Wrong True is "+str(wrongtrue*100/errors)
-
-
+    '''
+    print "\n--------------"+str(contextualthresh)
+    if errors+trueland!=0:
+        print "Wrong True is "+str(errors*100/(errors+trueland))+"%"
+        print "Correct landing spots are " +str(trueland*100/(errors+trueland))+"%"
+    else:
+        print "Correct landing spots are 0 %"
+    print "Found "+str(landspot)+" Landings"
+    print "\n--------------"
+    #print rights
+    #print wrongs
 
 
 #One time training
@@ -113,61 +131,81 @@ def canLand(pointarray,space,x,y):        #pointarray is an array of arrays.
 
 #Standard deviation with NVM
 def model_standard_deviation_2(zarray,space,x,y):
-    global aggression
-    if aggression == "conservative":
-        rt_thr = 8
-    else:
-        rt_thr = 0
+    global aggression , golden , rights , wrongs
+    rt_thr = 8 - aggression
     THR_STD = 2
+    arr = []
 
-    if np.std(np.array(zarray)) < THR_STD and min(zarray) > space.getfloor():
+
+    if min(zarray) > space.getfloor():
         rt0 = 0
         if y+1 in space.boxes[x]:
-            rt0 = canstand(space.boxes[x][y+1],space)
-
+            rt1 ,g= canstand(space.boxes[x][y+1],space,np.std(np.array(zarray)))
+            rt0 = rt0 + rt1
+            arr.append(g)
         if y-1 in space.boxes[x]:
-            rt0 = canstand(space.boxes[x][y-1],space) + rt0
+            rt2,g = canstand(space.boxes[x][y-1],space,np.std(np.array(zarray)))
+            rt0=rt0+ rt2
+            arr.append(g)
 
         if x+1 in space.boxes[x] and y in space.boxes[x+1]:
-            rt0  = canstand(space.boxes[x+1][y],space) + rt0
-
+            rt3,g = canstand(space.boxes[x+1][y],space,np.std(np.array(zarray)))
+            rt0 = rt0+ rt3
+            arr.append(g)
 
         if x+1 in space.boxes and y+1 in space.boxes[x+1]:
-            rt0  = canstand(space.boxes[x+1][y+1],space) + rt0
+            rt4,g = canstand(space.boxes[x+1][y+1],space,np.std(np.array(zarray)))
+            rt0=rt0+rt4
+            arr.append(g)
 
         if x+1 in space.boxes and y-1 in space.boxes[x+1]:
-            rt0  = canstand(space.boxes[x+1][y-1],space) + rt0
-
+            rt5 ,g  = canstand(space.boxes[x+1][y-1],space,np.std(np.array(zarray)))
+            rt0 = rt0 + rt5
+            arr.append(g)
 
         if x-1 in space.boxes and y-1 in space.boxes[x-1]:
-            rt0 = canstand(space.boxes[x-1][y-1],space) + rt0
-
+            rt6 ,g= canstand(space.boxes[x-1][y-1],space,np.std(np.array(zarray)))
+            rt0 = rt0 + rt6
+            arr.append(g)
         if x-1 in space.boxes and y in space.boxes[x-1]:
-            rt0 = canstand(space.boxes[x-1][y],space) + rt0
+            rt7,g = canstand(space.boxes[x-1][y],space,np.std(np.array(zarray)))
+            rt0 = rt0 + rt7
+            arr.append(g)
 
         if x-1 in space.boxes and y+1 in space.boxes[x-1]:
-            rt0 = canstand(space.boxes[x-1][y+1],space) + rt0
+            rt8,g = canstand(space.boxes[x-1][y+1],space,np.std(np.array(zarray)))
+            rt0=rt0 + rt8
+            arr.append(g)
 
-        if rt0 >= rt_thr:
+        #print rt0
+        if rt0>=rt_thr and np.mean(np.array(arr))<space.getfloor()+contextualthresh:
+            if golden[x][y]==[True]:
+                rights.append(arr)
+            if golden[x][y]==[False]:
+                wrongs.append(arr)
             return True
         else:
             return False
+
+
     else:
         return False
 
-def canstand(pointarray,space):        #pointarray is an array of arrays.
+def canstand(pointarray,space,stddev):        #pointarray is an array of arrays.
     zs = []
     for each in pointarray:
         zs.append(each[2])
-    return only_standard(zs,space)
+    return only_standard(zs,space,stddev)
 
-def only_standard(zarray,space):
+def only_standard(zarray,space,stddev):
     THR_STD = 2
+    global contextualthresh
 
-    if np.std(np.array(zarray)) < THR_STD and min(zarray) > space.getfloor():
-        return 1
+    if min(zarray) > space.getfloor():
+        return 1 , np.median(np.array(zarray))
+
     else:
-        return -999
+        return -999,np.median(np.array(zarray))
 
 # 3 images
 def feature(SIFTFeatures,truth,target):
@@ -240,10 +278,12 @@ def writeto(locations):
 
 
 def main():
-    global fname,outf
+    global fname,outf,contextualthresh
     parser = arg.args()
     fname = parser.parse_args().filename
     outf = parser.parse_args().out
+    if parser.parse_args().thresh != "":
+        contextualthresh = float(parser.parse_args().thresh)
     if fname == "":
         print "Please provide input filename with the -f"
         exit(-1)
